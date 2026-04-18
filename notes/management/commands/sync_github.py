@@ -1,5 +1,7 @@
 import requests
 import logging
+import datetime
+from django.utils import timezone
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
@@ -73,8 +75,28 @@ class Command(BaseCommand):
             
             if file_resp.status_code == 200:
                 raw_content = file_resp.text
+                
+                # Fetch latest commit timestamp for this specific file
+                commit_url = f"https://api.github.com/repos/{repo_full_name}/commits?path={filepath}&sha={branch}&per_page=1"
+                commit_resp = requests.get(commit_url, headers=headers)
+                
+                timestamp = timezone.now()
+                if commit_resp.status_code == 200:
+                    commits_data = commit_resp.json()
+                    if commits_data:
+                        timestamp_str = commits_data[0].get("commit", {}).get("committer", {}).get("date", "")
+                        if timestamp_str:
+                            try:
+                                timestamp = datetime.datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                            except ValueError:
+                                pass
+
                 try:
-                    note, created = ingestor.ingest_note(filename, raw_content)
+                    note, created = ingestor.ingest_note(filename, raw_content, updated_at=timestamp)
+                    if created and note:
+                        note.created_at = timestamp
+                        note.save(update_fields=['created_at'])
+                        
                     status_str = "Created" if created else "Updated"
                     self.stdout.write(f"[{status_str}] {filename}")
                     success_count += 1
