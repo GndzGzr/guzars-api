@@ -9,6 +9,7 @@ from django.conf import settings
 from django.http import HttpResponseForbidden, JsonResponse
 from notes.services import NoteIngestor
 from notes.models import Note
+from notes.utils import is_path_allowed
 
 logger = logging.getLogger(__name__)
 
@@ -64,14 +65,14 @@ class GitHubWebhookView(APIView):
         for commit in commits:
             # Process Removed Files
             for filepath in commit.get("removed", []):
-                if filepath.endswith(".md"):
+                if filepath.endswith(".md") and is_path_allowed(filepath):
                     slug = filepath.split("/")[-1].replace(".md", "")
                     Note.objects.filter(slug=slug).delete()
 
             # Process Added/Modified Files
             upsert_files = commit.get("added", []) + commit.get("modified", [])
             for filepath in upsert_files:
-                if filepath.endswith(".md"):
+                if filepath.endswith(".md") and is_path_allowed(filepath):
                     self._fetch_and_ingest(repo_full_name, branch, filepath, ingestor)
 
         return JsonResponse({"status": "success"})

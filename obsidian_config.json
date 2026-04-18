@@ -1,0 +1,10 @@
+{
+  "include_paths": [],
+  "exclude_paths": [
+    ".obsidian",
+    "Templates",
+    "Assets",
+    "Attachments",
+    "Excalidraw"
+  ]
+}

@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 from notes.services import NoteIngestor
 import base64
+from notes.utils import is_path_allowed
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,12 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         repo_full_name = kwargs['repo_full_name']
         branch = kwargs['branch']
+        
+        # Clean up URL if the user provides a full link instead of owner/repo
+        repo_full_name = repo_full_name.replace('https://github.com/', '').replace('http://github.com/', '').strip('/')
+        if repo_full_name.endswith('.git'):
+            repo_full_name = repo_full_name[:-4]
+            
         github_token = getattr(settings, 'GITHUB_PERSONAL_ACCESS_TOKEN', '')
 
         self.stdout.write(self.style.SUCCESS(f"Starting bulk sync for {repo_full_name} on branch '{branch}'..."))
@@ -37,8 +44,13 @@ class Command(BaseCommand):
 
         tree_data = resp.json().get('tree', [])
         
-        # 2. Filter out exclusively for markdown files
-        md_files = [item for item in tree_data if item.get('type') == 'blob' and item.get('path', '').endswith('.md')]
+        # 2. Filter out exclusively for markdown files and allowed paths
+        md_files = [
+            item for item in tree_data 
+            if item.get('type') == 'blob' 
+            and item.get('path', '').endswith('.md')
+            and is_path_allowed(item.get('path', ''))
+        ]
         
         self.stdout.write(self.style.SUCCESS(f"Found {len(md_files)} markdown files. Beginning ingestion..."))
 
