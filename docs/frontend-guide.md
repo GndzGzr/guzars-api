@@ -1,108 +1,125 @@
-# Frontend Implementation Guide: Obsidian Headless CMS
+# Next.js Frontend Implementation Guide
 
-This document outlines how to build a frontend application (e.g., using Next.js, React, Vue, or Svelte) that consumes your Obsidian Headless CMS built with Django.
+This guide provides a complete blueprint for building a frontend application using **Next.js (App Router)** to consume your Obsidian Headless CMS.
 
-## 📡 API Overview
-
-- **Base URL**: `https://guzars-api.vercel.app/api/`
-- **Authentication**: Token-based. You must include an `Authorization` header in all requests (except webhooks).
-- **Format**: JSON
-
----
-
-## 🔐 Authentication
-
-To fetch your private notes securely, your frontend needs your API token. 
-
-### 1. Getting a Token
-You can generate a token by sending your admin credentials to the token endpoint:
-```http
-POST /api/auth/token/
-Content-Type: application/json
-
-{
-    "username": "g",
-    "password": "g"
-}
+## 🚀 1. Project Setup
+Initialize a new Next.js project with Tailwind CSS (highly recommended for formatting the markdown):
+```bash
+npx create-next-app@latest guzars-frontend
+cd guzars-frontend
+npm install html-react-parser @tailwindcss/typography
 ```
-**Response:**
-```json
-{
-    "token": "14df91e1f3deac6b54b2452342402942792bb3e9"
-}
-```
+*Note: We install `@tailwindcss/typography` to easily style the raw HTML our API sends us using the `prose` class.*
 
-### 2. Using the Token in your Frontend
-In your frontend (like Next.js), save this token in your `.env.local` file as `OBSIDIAN_API_TOKEN`.
-
-When making requests, include it in the headers:
+Update your `tailwind.config.js` to include the typography plugin:
 ```javascript
-const response = await fetch('https://guzars-api.vercel.app/api/notes/', {
-  headers: {
-    'Authorization': `Token ${process.env.OBSIDIAN_API_TOKEN}`,
-    'Content-Type': 'application/json'
-  }
-});
+module.exports = {
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
+}
 ```
 
----
-
-## 🛣️ Core Endpoints
-
-### 1. Fetch All Notes
-`GET /api/notes/`
-
-Returns a paginated list of all notes in your vault.
-
-**Response Map:**
-- `id`: Database ID
-- `title`: The display name of the note.
-- `slug`: The URL-friendly identifier (use this for your frontend routes, e.g., `/notes/[slug]`).
-- `note_type`: `"PRM"` (Permanent), `"REF"` (Reference), or `"FLT"` (Fleeting).
-- `tags`: Array of tag objects.
-- `metadata`: The raw YAML frontmatter parsed as a JSON object.
-
-### 2. Fetch a Single Note
-`GET /api/notes/<slug>/`
-
-Returns the full details of a note, including its compiled HTML and relational graph data.
-
-**Key Fields to utilize in the Frontend:**
-- `content_html`: The fully compiled HTML of your markdown note. 
-- `outgoing_links`: An array of notes that *this* note links to.
-- `incoming_links` (Backlinks): An array of notes that link *to this* note. (Perfect for building an Obsidian-style "Backlinks" panel).
-
----
-
-## 🎨 Rendering the Content
-
-The backend automatically parses Obsidian Markdown and compiles it into valid HTML via Mistune. 
-
-### Handling Wikilinks
-When you type `[[My Note]]` in Obsidian, the backend API converts it into:
-```html
-<a href="/api/notes/my-note" class="internal-link">My Note</a>
+## 🔐 2. Environment Variables
+Create a `.env.local` file in your Next.js root:
+```env
+NEXT_PUBLIC_API_URL=https://guzars-api.vercel.app/api
+OBSIDIAN_API_TOKEN=your_token_here
 ```
 
-**Frontend Strategy:**
-If you are using a framework like Next.js or React, rendering raw HTML is easy, but you'll want to intercept clicks on those `internal-link` anchor tags so they trigger client-side routing (e.g., routing the user to `/notes/my-note` instead of reloading the page to the raw API url).
+## 📡 3. Data Fetching Utility
+In Next.js App Router, you can fetch data directly in your Server Components. Create a `lib/api.js` utility:
 
-**React Example (Next.js):**
-```jsx
-import parse from 'html-react-parser';
-import Link from 'next/link';
+```javascript
+// lib/api.js
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const TOKEN = process.env.OBSIDIAN_API_TOKEN;
 
-export default function NotePage({ note }) {
+export async function fetchAPI(endpoint) {
+  const res = await fetch(`${API_URL}${endpoint}`, {
+    headers: {
+      'Authorization': `Token ${TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    // Cache the response, revalidate every 60 seconds (ISR)
+    next: { revalidate: 60 } 
+  });
   
-  // Intercept internal links to use Next.js <Link> wrapper
+  if (!res.ok) throw new Error(`Failed to fetch ${endpoint}`);
+  return res.json();
+}
+```
+
+## 🛣️ 4. Building the Routes
+
+### A. The Notes Index (`app/notes/page.jsx`)
+Fetch and display all notes (Fleeting, Reference, Permanent).
+
+```jsx
+import Link from 'next/link';
+import { fetchAPI } from '@/lib/api';
+
+export default async function NotesIndex() {
+  const data = await fetchAPI('/notes/');
+  const notes = data.results || data;
+
+  return (
+    <div className="max-w-4xl mx-auto p-8">
+      <h1 className="text-3xl font-bold mb-8">My Digital Garden</h1>
+      <ul className="space-y-4">
+        {notes.map(note => (
+          <li key={note.id} className="p-4 border rounded shadow-sm hover:shadow-md transition">
+            <Link href={`/notes/${note.slug}`} className="text-xl text-blue-600 font-semibold">
+              {note.title}
+            </Link>
+            <div className="text-sm text-gray-500 mt-2 space-x-2">
+              <span>{note.note_type}</span>
+              {note.tags.map(tag => (
+                <span key={tag.slug} className="bg-gray-100 px-2 py-1 rounded">#{tag.name}</span>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+### B. The Single Note Page (`app/notes/[slug]/page.jsx`)
+Fetch the single note and render the HTML safely, intercepting Obsidian Wikilinks.
+
+```jsx
+import { fetchAPI } from '@/lib/api';
+import parse, { domToReact } from 'html-react-parser';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
+export async function generateMetadata({ params }) {
+  try {
+    const note = await fetchAPI(`/notes/${params.slug}/`);
+    return { title: note.title };
+  } catch {
+    return { title: 'Note Not Found' };
+  }
+}
+
+export default async function NotePage({ params }) {
+  let note;
+  try {
+    note = await fetchAPI(`/notes/${params.slug}/`);
+  } catch (error) {
+    notFound();
+  }
+
+  // Intercept Obsidian internal links to use Next.js <Link> wrapper
   const options = {
-    replace: ({ attribs, children }) => {
-      if (!attribs) return;
-      if (attribs.class === 'internal-link') {
-        const localPath = attribs.href.replace('/api/', '/');
+    replace: ({ name, attribs, children }) => {
+      if (name === 'a' && attribs?.class === 'internal-link') {
+        const localPath = attribs.href.replace('/api/notes/', '/notes/');
         return (
           <Link href={localPath} className="text-blue-500 hover:underline">
-            {children[0].data}
+            {domToReact(children, options)}
           </Link>
         );
       }
@@ -110,36 +127,64 @@ export default function NotePage({ note }) {
   };
 
   return (
-    <article className="prose lg:prose-xl">
-      <h1>{note.title}</h1>
+    <div className="max-w-3xl mx-auto p-8">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-4">{note.title}</h1>
+        <div className="flex gap-2">
+          {note.tags.map(t => <span key={t.slug} className="text-sm bg-blue-100 text-blue-800 px-2 rounded">#{t.name}</span>)}
+        </div>
+      </div>
       
-      {/* Safely render the backend HTML */}
-      <div>{parse(note.content_html, options)}</div>
+      {/* Safely render the compiled markdown HTML with Tailwind Typography */}
+      <div className="prose prose-blue prose-lg max-w-none">
+        {parse(note.content_html, options)}
+      </div>
       
       {/* Render Obsidian Backlinks */}
-      <div className="mt-10 border-t pt-5">
-        <h3>Backlinks</h3>
-        <ul>
-          {note.incoming_links?.map(link => (
-            <li key={link.id}>
-              <Link href={`/notes/${link.source_slug}`}>
-                {link.source_title}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </article>
+      {note.incoming_links && note.incoming_links.length > 0 && (
+        <div className="mt-16 border-t pt-8">
+          <h3 className="text-2xl font-semibold mb-4">Backlinks</h3>
+          <ul className="list-disc pl-5">
+            {note.incoming_links.map(link => (
+              <li key={link.id} className="mb-2">
+                <Link href={`/notes/${link.source.slug}`} className="text-blue-500 hover:underline">
+                  {link.source.title}
+                </Link>
+                {link.context_text && (
+                  <p className="text-sm text-gray-500 italic mt-1">{link.context_text}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
 ```
 
----
+## 🖼️ 5. Handling Images and PDFs
+Our API uses a specialized proxy (`/api/assets/?file=...`) for images and PDFs. 
+Since `html-react-parser` loads the `src` attribute exactly as the backend compiled it, **images and PDFs will work out of the box**! The Next.js client request will call your Django backend proxy, which acts as a secure tunnel to your GitHub repository raw files.
 
-## 🕷️ Building a Knowledge Graph
-Because the API exposes `outgoing_links` and `incoming_links` for every note, you can easily build an interactive canvas graph (like Obsidian's Graph View) in the frontend using libraries like:
-- **`react-force-graph`**
-- **`d3.js`**
-- **`cytoscape.js`**
+If you specifically want to optimize images using Next.js `<Image />`, you can add another rule to the `options` parser inside `app/notes/[slug]/page.jsx`:
+```jsx
+// inside replace function:
+if (name === 'img' && attribs?.class === 'obsidian-embed-image') {
+  return (
+    <img 
+      src={`https://guzars-api.vercel.app${attribs.src}`} 
+      alt={attribs.alt} 
+      className="rounded-lg shadow-md"
+      loading="lazy"
+    />
+  );
+}
+```
 
-You can map `notes` as **Nodes**, and `outgoing_links` as **Edges** linking the `source` node to the `target` node. 
+## 🕸️ 6. Graph View (Optional)
+To build an interactive Graph View natively in React, use `react-force-graph-2d`.
+```bash
+npm install react-force-graph-2d
+```
+Fetch all notes, map `notes` to Nodes (id = note.id), and map `outgoing_links` to Links (source = source.id, target = target.id), then pass them to the `<ForceGraph2D graphData={data} />` component.
