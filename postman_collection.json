@@ -1,0 +1,198 @@
+{
+  "info": {
+    "name": "Obsidian Headless CMS API",
+    "description": "API collection for the Obsidian Headless CMS running on Vercel.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Obtain Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"g\",\n    \"password\": \"g\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/token/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "token",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notes",
+      "item": [
+        {
+          "name": "Get All Notes",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "value",
+                  "value": "Token {{token}}",
+                  "type": "string"
+                },
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notes/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notes",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Tags",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "value",
+                  "value": "Token {{token}}",
+                  "type": "string"
+                },
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tags/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tags",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Test GitHub Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Hub-Signature-256",
+                "value": "sha256=YOUR_TEST_HMAC_SIGNATURE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"ref\": \"refs/heads/main\",\n    \"commits\": [\n        {\n            \"modified\": [\"content/My Note.md\"]\n        }\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/github/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "github",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://guzars-api.vercel.app/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "14df91e1f3deac6b54b2452342402942792bb3e9",
+      "type": "string"
+    }
+  ]
+}
