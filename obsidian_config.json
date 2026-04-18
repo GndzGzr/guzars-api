@@ -1,5 +1,9 @@
 {
-  "include_paths": [],
+  "include_paths": [
+    "100-FLT Fleeting",
+    "200-REF Reference",
+    "300-PERM Permanent"
+  ],
   "exclude_paths": [
     ".obsidian",
     "Templates",
