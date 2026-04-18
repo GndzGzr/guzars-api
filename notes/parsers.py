@@ -97,9 +97,8 @@ def plugin_obsidian_embeds(md):
     """
     A Mistune plugin to parse ![[Embeds]] commonly used in Obsidian for Images/PDFs/Notes.
     """
-    md.inline.register('obsidian_embed', EMBED_PATTERN, parse_obsidian_embed, before='wikilink')
-    
-    if md.renderer and md.renderer.__class__.__name__ == 'HTMLRenderer':
+    md.inline.register('obsidian_embed', EMBED_PATTERN, parse_obsidian_embed, before='link')
+    if md.renderer and hasattr(md.renderer, 'register'):
         md.renderer.register('obsidian_embed', render_html_obsidian_embed)
 
 
@@ -107,12 +106,8 @@ def plugin_wikilinks(md):
     """
     A Mistune plugin to parse [[Wikilinks]] commonly used in Obsidian.
     """
-    # register the parser
-    # regex pattern must be compiled or a string in latest mistune versions
     md.inline.register('wikilink', WIKILINK_PATTERN, parse_wikilink, before='link')
-    
-    # register the HTML renderer
-    if md.renderer and md.renderer.__class__.__name__ == 'HTMLRenderer':
+    if md.renderer and hasattr(md.renderer, 'register'):
         md.renderer.register('wikilink', render_html_wikilink)
 
 
