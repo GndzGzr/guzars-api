@@ -6,5 +6,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path("api/auth/token/", obtain_auth_token, name="obtain-token"),
-    path("notes/", include("notes.urls")),
+    path("api/", include("notes.urls")),
 ]

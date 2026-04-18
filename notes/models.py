@@ -24,11 +24,17 @@ class Note(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
         if not self.zettel_id:
-            self.zettel_id = timezone.now().strftime("%Y%m%d%H%M%S")
+            # Append a random 4-character string to prevent collisions 
+            # if multiple notes are created in the same second.
+            import uuid
+            self.zettel_id = timezone.now().strftime("%Y%m%d%H%M%S") + "-" + uuid.uuid4().hex[:4]
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -68,6 +74,7 @@ class Tag(models.Model):
     )
 
     class Meta:
+        ordering = ['name']
         unique_together = (
             "name",
             "parent",
