@@ -6,9 +6,11 @@
   ],
   "exclude_paths": [
     ".obsidian",
-    "Templates",
-    "Assets",
-    "Attachments",
-    "Excalidraw"
+    "000-INDEX",
+    "500-GZR GUZARS",
+    "600-PER Personal",
+    "700-WRK Work",
+    "800-ARC Archive",
+    "900-SRC Sources"
   ]
 }
