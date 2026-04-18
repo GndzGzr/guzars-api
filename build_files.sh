@@ -4,3 +4,4 @@ python3.12 -m pip install -r requirements.txt --break-system-packages
 
 # Run migrations so the Vercel deployment correctly setups the remote Supabase structure
 python3.12 manage.py migrate --noinput
+python3.12 manage.py collectstatic --noinput
