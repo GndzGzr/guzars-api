@@ -119,14 +119,30 @@ class NoteIngestor:
         # Determine specific Note class based on type
         if note_type_str.startswith('reference'):
             defaults['note_type'] = Note.NoteType.REFERENCE
-            defaults['source_url'] = metadata.get('source_url', '')
-            defaults['reference_url'] = metadata.get('reference_url', '')
-            defaults['author'] = metadata.get('author', '')
+            
+            # YAML frontmatter returns `None` for empty keys. 
+            # We must coalesce them to `""` to satisfy Django's NOT NULL constraint.
+            s_url = metadata.get('source_url', '')
+            defaults['source_url'] = str(s_url) if s_url is not None else ''
+            
+            r_url = metadata.get('reference_url', '')
+            defaults['reference_url'] = str(r_url) if r_url is not None else ''
+            
+            # YAML sometimes parses lists: author: ["Name 1", "Name 2"]
+            author_val = metadata.get('author', '')
+            if isinstance(author_val, list):
+                defaults['author'] = ", ".join(str(a) for a in author_val)
+            else:
+                defaults['author'] = str(author_val) if author_val is not None else ''
+                
             # Try to infer reference_type from sub-type e.g. "reference-book" -> "book"
             if "-" in note_type_str:
-                defaults['reference_type'] = note_type_str.split("-", 1)[1]
+                ref_type = note_type_str.split("-", 1)[1]
+                defaults['reference_type'] = str(ref_type) if ref_type is not None else ''
             else:
-                defaults['reference_type'] = metadata.get('reference_type', '')
+                ref_type = metadata.get('reference_type', '')
+                defaults['reference_type'] = str(ref_type) if ref_type is not None else ''
+                
             model_class = ReferenceNote
         elif note_type_str.startswith('permanent'):
             defaults['note_type'] = Note.NoteType.PERMANENT
