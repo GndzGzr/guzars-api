@@ -30,12 +30,15 @@ class NoteSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     outgoing_links = NoteLinkSerializer(many=True, read_only=True)
     incoming_links = NoteBacklinkSerializer(many=True, read_only=True)
+    parent_note_slug = serializers.CharField(source='parent_note.slug', read_only=True)
+    parent_note_title = serializers.CharField(source='parent_note.title', read_only=True)
     
     class Meta:
         model = Note
         fields = [
             'id', 'title', 'slug', 'note_type', 'zettel_id',
             'content_html', 'metadata', 'tags', 
+            'parent_note', 'parent_note_slug', 'parent_note_title',
             'outgoing_links', 'incoming_links',
             'created_at', 'updated_at'
         ]
@@ -49,8 +52,6 @@ class ReferenceNoteSerializer(NoteSerializer):
 
 
 class PermanentNoteSerializer(NoteSerializer):
-    parent_note_slug = serializers.CharField(source='parent_note.slug', read_only=True)
-    
     class Meta(NoteSerializer.Meta):
         model = PermanentNote
-        fields = NoteSerializer.Meta.fields + ['parent_note', 'parent_note_slug', 'is_atomic']
+        fields = NoteSerializer.Meta.fields + ['is_atomic']

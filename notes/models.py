@@ -21,6 +21,16 @@ class Note(models.Model):
 
     zettel_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
     tags = models.ManyToManyField("Tag", related_name="notes", blank=True)
+    
+    # Any note can now have a parent note (e.g., lecture notes belonging to a module)
+    parent_note = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="children",
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -55,13 +65,6 @@ class PermanentNote(Note):
     """Atomik ve rafine edilmiş kalıcı düşünceler"""
 
     # Kalıcı notlarda hiyerarşi (Luhmann'ın numbering sistemi gibi)
-    parent_note = models.ForeignKey(
-        "self",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="children",
-    )
     is_atomic = models.BooleanField(default=True)
 
 

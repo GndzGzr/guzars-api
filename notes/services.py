@@ -81,6 +81,24 @@ class NoteIngestor:
         
         if 'zettel_id' in metadata:
             defaults['zettel_id'] = metadata['zettel_id']
+
+        # Handle explicit parent-child logic from frontmatter (e.g. parent: "Biology Course")
+        parent_name = metadata.get('parent')
+        if parent_name:
+            if str(parent_name).startswith("[[") and str(parent_name).endswith("]]"):
+                parent_name = str(parent_name)[2:-2].split("|")[0]
+            
+            parent_slug = slugify(parent_name)
+            # Create a placeholder parent note if it doesn't exist yet so we can attach immediately
+            parent_obj, p_created = Note.objects.get_or_create(
+                slug=parent_slug,
+                defaults={
+                    'title': parent_name,
+                    'content_raw': '',
+                    'note_type': Note.NoteType.FLEETING
+                }
+            )
+            defaults['parent_note'] = parent_obj
             
         # Determine specific Note class based on type
         if note_type_str == 'reference':
