@@ -1,0 +1,16 @@
+{
+  "include_paths": [
+    "100-FLT Fleeting",
+    "200-REF Reference",
+    "300-PERM Permanent"
+  ],
+  "exclude_paths": [
+    ".obsidian",
+    "000-INDEX",
+    "500-GZR Guzars",
+    "600-PER Personal",
+    "700-WRK Work",
+    "800-ARC Archive",
+    "900-SRC Sources"
+  ]
+}

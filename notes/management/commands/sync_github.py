@@ -46,12 +46,21 @@ class Command(BaseCommand):
 
         tree_data = resp.json().get('tree', [])
         
+        from api.models import VaultConfiguration
+        from notes.utils import load_local_config
+        try:
+            config = load_local_config()
+            if not config:
+                config = VaultConfiguration.load()
+        except:
+            config = None
+
         # 2. Filter out exclusively for markdown files and allowed paths
         md_files = [
             item for item in tree_data 
             if item.get('type') == 'blob' 
             and item.get('path', '').endswith('.md')
-            and is_path_allowed(item.get('path', ''))
+            and is_path_allowed(item.get('path', ''), config=config)
         ]
         
         self.stdout.write(self.style.SUCCESS(f"Found {len(md_files)} markdown files. Beginning ingestion..."))
