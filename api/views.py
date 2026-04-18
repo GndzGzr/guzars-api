@@ -144,6 +144,7 @@ class AssetProxyView(APIView):
 
 from .models import VaultConfiguration
 from .serializers import VaultConfigurationSerializer
+from drf_spectacular.utils import extend_schema
 
 class VaultConfigurationView(APIView):
     """
@@ -152,11 +153,13 @@ class VaultConfigurationView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(responses=VaultConfigurationSerializer)
     def get(self, request):
         config = VaultConfiguration.load()
         serializer = VaultConfigurationSerializer(config)
         return Response(serializer.data)
 
+    @extend_schema(request=VaultConfigurationSerializer, responses=VaultConfigurationSerializer)
     def put(self, request):
         config = VaultConfiguration.load()
         serializer = VaultConfigurationSerializer(config, data=request.data, partial=True)
