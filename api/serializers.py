@@ -1,9 +1,7 @@
 from rest_framework import serializers
+from .models import VaultConfiguration
 
-
-# Add your serializers here.
-# Example:
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['id', 'username', 'email']
+class VaultConfigurationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VaultConfiguration
+        fields = ['include_paths', 'exclude_paths', 'last_updated']

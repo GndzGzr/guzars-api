@@ -2,7 +2,7 @@ import logging
 import frontmatter
 from django.utils.text import slugify
 from notes.models import Note, Tag, ReferenceNote, PermanentNote, NoteLink
-from notes.parsers import render_markdown_to_html, extract_links_from_content
+from notes.parsers import render_markdown_to_html, extract_links_from_content, extract_toc_from_content
 
 logger = logging.getLogger(__name__)
 
@@ -59,11 +59,16 @@ class NoteIngestor:
         
         note_instance.tags.set(leaf_tags)
 
-    def ingest_note(self, filename: str, raw_content: str):
+    def ingest_note(self, filename: str, raw_content: str, created_at=None, updated_at=None):
         """
         Primary ingestion function for a single Markdown file context.
         """
-        metadata, content = self.parse_markdown(raw_content)
+        try:
+            metadata, content = self.parse_markdown(raw_content)
+        except Exception as e:
+            logger.error(f"Failed to parse frontmatter in {filename}: {e}")
+            metadata = {}
+            content = raw_content
         
         # Derive title and slug
         # Filename acts as title if title is missing from metadata. Usually we strip '.md'
@@ -77,10 +82,21 @@ class NoteIngestor:
             'content_raw': content,
             'content_html': render_markdown_to_html(content),
             'metadata': metadata,
+            'toc': extract_toc_from_content(content),
+            'published': metadata.get('published', True)
         }
+        
+        if created_at:
+            defaults['created_at'] = created_at
+        if updated_at:
+            defaults['updated_at'] = updated_at
         
         if 'zettel_id' in metadata:
             defaults['zettel_id'] = metadata['zettel_id']
+        else:
+            import uuid
+            from django.utils import timezone
+            defaults['zettel_id'] = timezone.now().strftime("%Y%m%d%H%M%S") + "-" + uuid.uuid4().hex[:4]
 
         # Handle explicit parent-child logic from frontmatter (e.g. parent: "Biology Course")
         parent_name = metadata.get('parent')
@@ -101,13 +117,18 @@ class NoteIngestor:
             defaults['parent_note'] = parent_obj
             
         # Determine specific Note class based on type
-        if note_type_str == 'reference':
+        if note_type_str.startswith('reference'):
             defaults['note_type'] = Note.NoteType.REFERENCE
             defaults['source_url'] = metadata.get('source_url', '')
+            defaults['reference_url'] = metadata.get('reference_url', '')
             defaults['author'] = metadata.get('author', '')
-            defaults['reference_type'] = metadata.get('reference_type', '')
+            # Try to infer reference_type from sub-type e.g. "reference-book" -> "book"
+            if "-" in note_type_str:
+                defaults['reference_type'] = note_type_str.split("-", 1)[1]
+            else:
+                defaults['reference_type'] = metadata.get('reference_type', '')
             model_class = ReferenceNote
-        elif note_type_str == 'permanent':
+        elif note_type_str.startswith('permanent'):
             defaults['note_type'] = Note.NoteType.PERMANENT
             defaults['is_atomic'] = metadata.get('is_atomic', True)
             model_class = PermanentNote

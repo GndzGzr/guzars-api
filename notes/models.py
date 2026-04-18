@@ -18,6 +18,7 @@ class Note(models.Model):
     content_raw = models.TextField()
     content_html = models.TextField(blank=True)
     metadata = models.JSONField(default=dict)
+    toc = models.JSONField(default=list, blank=True)
 
     zettel_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
     tags = models.ManyToManyField("Tag", related_name="notes", blank=True)
@@ -31,8 +32,9 @@ class Note(models.Model):
         related_name="children",
     )
     
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    published = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         ordering = ['-created_at']
@@ -55,6 +57,7 @@ class ReferenceNote(Note):
     """Kitap, makale veya video özetleri için"""
 
     source_url = models.URLField(max_length=500, blank=True)
+    reference_url = models.CharField(max_length=500, blank=True, help_text="External URL or internal wikilink like [[Book Note]]")
     author = models.CharField(max_length=255, blank=True)
     reference_type = models.CharField(
         max_length=50, help_text="Book, Article, Video vb."

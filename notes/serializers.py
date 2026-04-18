@@ -36,19 +36,18 @@ class NoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
         fields = [
-            'id', 'title', 'slug', 'note_type', 'zettel_id',
-            'content_html', 'metadata', 'tags', 
+            'id', 'title', 'slug', 'note_type', 'zettel_id', 'published',
+            'content_html', 'metadata', 'toc', 'tags', 
             'parent_note', 'parent_note_slug', 'parent_note_title',
             'outgoing_links', 'incoming_links',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['content_html', 'created_at', 'updated_at']
-
+        read_only_fields = ['content_html']
 
 class ReferenceNoteSerializer(NoteSerializer):
     class Meta(NoteSerializer.Meta):
         model = ReferenceNote
-        fields = NoteSerializer.Meta.fields + ['source_url', 'author', 'reference_type']
+        fields = NoteSerializer.Meta.fields + ['source_url', 'reference_url', 'author', 'reference_type']
 
 
 class PermanentNoteSerializer(NoteSerializer):

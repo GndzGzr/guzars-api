@@ -34,19 +34,19 @@
 - [ ] Write tests for the Knowledge graph generation.
 - [ ] Prepare & Deploy Serverless API on Vercel.
 ## Phase 6: CMS Architecture & Advanced Features (Requested)
-- [ ] **Type-Specific Endpoints**: Create `/api/notes/fleeting/`, `/api/notes/reference/`, and `/api/notes/permanent/` endpoints.
-- [ ] **Sub-Type Classification**: Allow `type` in frontmatter to define sub-types (e.g., `reference-book`, `reference-video`) while backend mapping uses the `parent` field/logic to categorize it properly under the main types (Fleeting, Reference, Permanent).
-- [ ] **Reference URLs**: Add `reference_url` field to Reference notes to point to external URLs or internal vault notes (`[[Book Note]]`).
-- [ ] **Local Asset & Image Handling**: Parse `![[image.png]]` and standard markdown images. Map them to github raw content URLs or a specialized local asset route so they never break.
-- [ ] **PDF Support**: Detect and handle embedded PDF files in markdown so they can be viewed/linked correctly in the frontend.
-- [ ] **Table of Contents (TOC)**: Automatically generate and store a structured TOC JSON from `####` headers during markdown parsing.
-- [ ] **Dynamic "How-To" Markdown Indices**: Serve specific markdown files when hitting root API index pages (like `/api/`) to explain how to use the endpoints natively.
-- [ ] **Metadata Enhancements**:
-  - Add `published` boolean field to all notes (default: `True`).
-  - Extract and save `created_at` and `updated_at` directly from GitHub commit metadata instead of generating local timestamps.
-  - Generate random `zettel_id` automatically on the fly if not provided.
-  - Provide bulletproof fallback mechanisms in the parser so broken frontmatter never crashes ingestion.
-  - Automatically pack unrecognized frontmatter fields into the JSON `metadata` bag.
-- [ ] **Remote CMS Configuration**: Move `obsidian_config.json` (folder include/exclude rules) into the database so the frontend admin panel can configure which folders sync dynamically.
-- [ ] **CMS Permissions**: Ensure the API is optimized for a Read-Only frontend CMS, with an admin/owner executing all backend creation/CRUD operations.
+- [x] **Type-Specific Endpoints**: Create `/api/notes/fleeting/`, `/api/notes/reference/`, and `/api/notes/permanent/` endpoints.
+- [x] **Sub-Type Classification**: Allow `type` in frontmatter to define sub-types (e.g., `reference-book`, `reference-video`) while backend mapping uses the `parent` field/logic to categorize it properly under the main types (Fleeting, Reference, Permanent).
+- [x] **Reference URLs**: Add `reference_url` field to Reference notes to point to external URLs or internal vault notes (`[[Book Note]]`).
+- [x] **Local Asset & Image Handling**: Parse `![[image.png]]` and standard markdown images. Map them to github raw content URLs via `/api/assets/` endpoint.
+- [x] **PDF Support**: Detect and handle embedded PDF files natively using `<iframe>` rendering.
+- [x] **Table of Contents (TOC)**: Automatically generate and store a structured TOC JSON from `####` headers.
+- [x] **Dynamic "How-To" Markdown Indices**: Serve specific markdown files when hitting root API index pages (like `/api/`) to explain how to use the endpoints natively.
+- [x] **Metadata Enhancements**:
+  - [x] Add `published` boolean field to all notes (default: `True`).
+  - [x] Extract and save `created_at` and `updated_at` directly from GitHub commit metadata instead of generating local timestamps.
+  - [x] Generate random `zettel_id` automatically on the fly if not provided.
+  - [x] Provide bulletproof fallback mechanisms in the parser so broken frontmatter never crashes ingestion.
+  - [x] Automatically pack unrecognized frontmatter fields into the JSON `metadata` bag.
+- [x] **Remote CMS Configuration**: Move `obsidian_config.json` (folder include/exclude rules) into the database so the frontend admin panel can configure which folders sync dynamically.
+- [x] **CMS Permissions**: Ensure the API is optimized for a Read-Only frontend CMS, with an admin/owner executing all backend creation/CRUD operations.
 
