@@ -1,6 +1,6 @@
 #!/bin/bash
-# Install exact requirements specified via file
-python3.12 -m pip install -r requirements.txt
+# Install exact requirements specified via file (breaking system packages to bypass PEP 668 on Vercel)
+python3.12 -m pip install -r requirements.txt --break-system-packages
 
 # Run migrations so the Vercel deployment correctly setups the remote Supabase structure
 python3.12 manage.py migrate --noinput
