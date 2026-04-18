@@ -168,4 +168,7 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Automatically generated, FastAPI-like Swagger documentation for your endpoints.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'SECURITY': [
+        {'TokenAuth': []}
+    ],
 }
