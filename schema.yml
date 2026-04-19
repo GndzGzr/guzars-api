@@ -1,0 +1,961 @@
+openapi: 3.0.3
+info:
+  title: Obsidian Headless CMS API
+  version: 1.0.0
+  description: Automatically generated, FastAPI-like Swagger documentation for your
+    endpoints.
+paths:
+  /:
+    get:
+      operationId: root_retrieve
+      description: |-
+        Renders the dynamic 'How-To' Markdown documentation natively on the base API route.
+        By default reads from the main project docs.
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/:
+    get:
+      operationId: api_retrieve
+      description: |-
+        Renders the dynamic 'How-To' Markdown documentation natively on the base API route.
+        By default reads from the main project docs.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/assets/:
+    get:
+      operationId: api_assets_retrieve
+      description: |-
+        Accepts a target generic or explicit relative file string, e.g., ?file=image.png
+        And either dynamically proxies it by making a raw GitHub API request,
+        or redirects the client straight to it.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/auth/signup/:
+    post:
+      operationId: api_auth_signup_create
+      description: |-
+        Endpoint for new user registration.
+        Returns the user's auth token upon successful creation.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSignup'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserSignup'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserSignup'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/auth/token/:
+    post:
+      operationId: api_auth_token_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: ''
+  /api/config/:
+    get:
+      operationId: api_config_retrieve
+      description: |-
+        CMS Endpoint to retrieve or update the vault synchronization rules.
+        Used by the Admin frontend to change included/excluded paths dynamically.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VaultConfiguration'
+          description: ''
+    put:
+      operationId: api_config_update
+      description: |-
+        CMS Endpoint to retrieve or update the vault synchronization rules.
+        Used by the Admin frontend to change included/excluded paths dynamically.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VaultConfiguration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VaultConfiguration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VaultConfiguration'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VaultConfiguration'
+          description: ''
+  /api/hello/:
+    get:
+      operationId: api_hello_retrieve
+      description: A simple protected endpoint to verify token auth is working.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/notes/:
+    get:
+      operationId: api_notes_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNoteList'
+          description: ''
+  /api/notes/{slug}/:
+    get:
+      operationId: api_notes_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+          description: ''
+  /api/notes/fleeting/:
+    get:
+      operationId: api_notes_fleeting_list
+      description: Endpoints for Fleeting notes
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNoteList'
+          description: ''
+  /api/notes/fleeting/{slug}/:
+    get:
+      operationId: api_notes_fleeting_retrieve
+      description: Endpoints for Fleeting notes
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+          description: ''
+  /api/notes/fleeting/graph/:
+    get:
+      operationId: api_notes_fleeting_graph_retrieve
+      description: |-
+        Returns a JSON mapped schema of nodes and links specifically shaped for
+        the Obsidian Graph View or network graph rendering in the frontend.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+          description: ''
+  /api/notes/fleeting/tree/:
+    get:
+      operationId: api_notes_fleeting_tree_retrieve
+      description: |-
+        Returns a lightweight payload of all notes including only metadata, parent paths, and titles.
+        Used primarily by the frontend to render the initial sidebar or file explorer.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+          description: ''
+  /api/notes/graph/:
+    get:
+      operationId: api_notes_graph_retrieve
+      description: |-
+        Returns a JSON mapped schema of nodes and links specifically shaped for
+        the Obsidian Graph View or network graph rendering in the frontend.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+          description: ''
+  /api/notes/permanent/:
+    get:
+      operationId: api_notes_permanent_list
+      description: Endpoints specific to Permanent notes
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPermanentNoteList'
+          description: ''
+  /api/notes/permanent/{slug}/:
+    get:
+      operationId: api_notes_permanent_retrieve
+      description: Endpoints specific to Permanent notes
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermanentNote'
+          description: ''
+  /api/notes/reference/:
+    get:
+      operationId: api_notes_reference_list
+      description: Endpoints specific to Reference notes
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReferenceNoteList'
+          description: ''
+  /api/notes/reference/{slug}/:
+    get:
+      operationId: api_notes_reference_retrieve
+      description: Endpoints specific to Reference notes
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceNote'
+          description: ''
+  /api/notes/tree/:
+    get:
+      operationId: api_notes_tree_retrieve
+      description: |-
+        Returns a lightweight payload of all notes including only metadata, parent paths, and titles.
+        Used primarily by the frontend to render the initial sidebar or file explorer.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+          description: ''
+  /api/tags/:
+    get:
+      operationId: api_tags_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTagList'
+          description: ''
+  /api/tags/{slug}/:
+    get:
+      operationId: api_tags_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+  /api/webhook/github/:
+    post:
+      operationId: api_webhook_github_create
+      description: |-
+        Endpoint that accepts GitHub Webhook 'push' events.
+        Authenticates requests via HMAC SHA256 signature rather than standard DRF tokens.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - TokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    AuthToken:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        token:
+          type: string
+          readOnly: true
+      required:
+      - password
+      - token
+      - username
+    LinkTypeEnum:
+      enum:
+      - REF
+      - SEQ
+      - STR
+      type: string
+      description: |-
+        * `REF` - General Reference
+        * `SEQ` - Sequence (Folgezettel)
+        * `STR` - Structure (MOC)
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        slug:
+          type: string
+          maxLength: 255
+          pattern: ^[-a-zA-Z0-9_]+$
+        note_type:
+          $ref: '#/components/schemas/NoteTypeEnum'
+        zettel_id:
+          type: string
+          nullable: true
+          maxLength: 20
+        published:
+          type: boolean
+        content_html:
+          type: string
+          readOnly: true
+        metadata: {}
+        toc: {}
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+          readOnly: true
+        parent_note:
+          type: integer
+          nullable: true
+        parent_note_slug:
+          type: string
+          readOnly: true
+        file_path:
+          type: string
+          maxLength: 500
+        parent_note_title:
+          type: string
+          readOnly: true
+        outgoing_links:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteLink'
+          readOnly: true
+        incoming_links:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteBacklink'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - content_html
+      - id
+      - incoming_links
+      - outgoing_links
+      - parent_note_slug
+      - parent_note_title
+      - tags
+      - title
+    NoteBacklink:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        source:
+          type: integer
+        source_slug:
+          type: string
+          readOnly: true
+        source_title:
+          type: string
+          readOnly: true
+        link_type:
+          $ref: '#/components/schemas/LinkTypeEnum'
+        context_text:
+          type: string
+          nullable: true
+      required:
+      - id
+      - source
+      - source_slug
+      - source_title
+    NoteLink:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        target:
+          type: integer
+        target_slug:
+          type: string
+          readOnly: true
+        target_title:
+          type: string
+          readOnly: true
+        link_type:
+          $ref: '#/components/schemas/LinkTypeEnum'
+        target_block:
+          type: string
+          nullable: true
+          maxLength: 255
+        context_text:
+          type: string
+          nullable: true
+      required:
+      - id
+      - target
+      - target_slug
+      - target_title
+    NoteTypeEnum:
+      enum:
+      - FLT
+      - REF
+      - PRM
+      type: string
+      description: |-
+        * `FLT` - Fleeting Note
+        * `REF` - Reference Note
+        * `PRM` - Permanent Note
+    PaginatedNoteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Note'
+    PaginatedPermanentNoteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermanentNote'
+    PaginatedReferenceNoteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReferenceNote'
+    PaginatedTagList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+    PermanentNote:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        slug:
+          type: string
+          maxLength: 255
+          pattern: ^[-a-zA-Z0-9_]+$
+        note_type:
+          $ref: '#/components/schemas/NoteTypeEnum'
+        zettel_id:
+          type: string
+          nullable: true
+          maxLength: 20
+        published:
+          type: boolean
+        content_html:
+          type: string
+          readOnly: true
+        metadata: {}
+        toc: {}
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+          readOnly: true
+        parent_note:
+          type: integer
+          nullable: true
+        parent_note_slug:
+          type: string
+          readOnly: true
+        file_path:
+          type: string
+          maxLength: 500
+        parent_note_title:
+          type: string
+          readOnly: true
+        outgoing_links:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteLink'
+          readOnly: true
+        incoming_links:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteBacklink'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        is_atomic:
+          type: boolean
+      required:
+      - content_html
+      - id
+      - incoming_links
+      - outgoing_links
+      - parent_note_slug
+      - parent_note_title
+      - tags
+      - title
+    ReferenceNote:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        slug:
+          type: string
+          maxLength: 255
+          pattern: ^[-a-zA-Z0-9_]+$
+        note_type:
+          $ref: '#/components/schemas/NoteTypeEnum'
+        zettel_id:
+          type: string
+          nullable: true
+          maxLength: 20
+        published:
+          type: boolean
+        content_html:
+          type: string
+          readOnly: true
+        metadata: {}
+        toc: {}
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+          readOnly: true
+        parent_note:
+          type: integer
+          nullable: true
+        parent_note_slug:
+          type: string
+          readOnly: true
+        file_path:
+          type: string
+          maxLength: 500
+        parent_note_title:
+          type: string
+          readOnly: true
+        outgoing_links:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteLink'
+          readOnly: true
+        incoming_links:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteBacklink'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        source_url:
+          type: string
+          format: uri
+          maxLength: 500
+        reference_url:
+          type: string
+          description: External URL or internal wikilink like [[Book Note]]
+          maxLength: 500
+        author:
+          type: string
+          maxLength: 255
+        reference_type:
+          type: string
+          description: Book, Article, Video vb.
+          maxLength: 50
+      required:
+      - content_html
+      - id
+      - incoming_links
+      - outgoing_links
+      - parent_note_slug
+      - parent_note_title
+      - reference_type
+      - tags
+      - title
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        slug:
+          type: string
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        parent:
+          type: integer
+          nullable: true
+      required:
+      - id
+      - name
+      - slug
+    UserSignup:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+      required:
+      - password
+      - username
+    VaultConfiguration:
+      type: object
+      properties:
+        include_paths:
+          description: List of folder paths to exclusively sync
+        exclude_paths:
+          description: List of folder paths to explicitly ignore
+        last_updated:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - last_updated
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"

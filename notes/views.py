@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import Note, Tag, ReferenceNote, PermanentNote
+from .models import Note, Tag, ReferenceNote, PermanentNote, NoteLink
 from .serializers import NoteSerializer, TagSerializer, ReferenceNoteSerializer, PermanentNoteSerializer, NoteTreeSerializer
 
 
@@ -29,6 +29,21 @@ class NoteViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = NoteTreeSerializer(queryset, many=True)
         return Response(serializer.data)
         
+    @action(detail=False, methods=['get'])
+    def graph(self, request):
+        """
+        Returns a JSON mapped schema of nodes and links specifically shaped for 
+        the Obsidian Graph View or network graph rendering in the frontend.
+        """
+        notes = self.get_queryset()
+        # only send links where both target and source are published and accessible
+        links = NoteLink.objects.filter(source__in=notes, target__in=notes)
+        
+        nodes = [{"id": n.slug, "name": n.title, "val": 1} for n in notes]
+        edges = [{"source": l.source.slug, "target": l.target.slug} for l in links]
+        
+        return Response({"nodes": nodes, "links": edges})
+
     def get_queryset(self):
         qs = super().get_queryset().filter(published=True)
         
@@ -72,3 +87,4 @@ class PermanentNoteViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PermanentNoteSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = 'slug'
+

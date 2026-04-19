@@ -84,10 +84,23 @@ class NoteIngestor:
         
         metadata = self._clean_metadata_for_json(metadata)
         # Derive title and slug
-        # Filename acts as title if title is missing from metadata. Usually we strip '.md'
         title = metadata.get('title') or filename.replace('.md', '')
         slug = metadata.get('slug', slugify(title))
-        note_type_str = str(metadata.get('type', 'fleeting')).lower()
+        
+        # Determine main type from parent or type
+        parent_val = str(metadata.get('parent', '')).lower().strip()
+        type_val = str(metadata.get('type', '')).lower().strip()
+        
+        if parent_val in ['reference', 'permanent', 'fleeting']:
+            main_type = parent_val
+        elif type_val.startswith('reference'):
+            main_type = 'reference'
+        elif type_val.startswith('permanent'):
+            main_type = 'permanent'
+        else:
+            main_type = 'fleeting'
+            
+        note_type_str = main_type
         
         # Base note defaults
         defaults = {
@@ -112,26 +125,11 @@ class NoteIngestor:
             from django.utils import timezone
             defaults['zettel_id'] = timezone.now().strftime("%Y%m%d%H%M%S") + "-" + uuid.uuid4().hex[:4]
 
-        # Handle explicit parent-child logic from frontmatter (e.g. parent: "Biology Course")
-        parent_name = metadata.get('parent')
-        if parent_name:
-            if str(parent_name).startswith("[[") and str(parent_name).endswith("]]"):
-                parent_name = str(parent_name)[2:-2].split("|")[0]
-            
-            parent_slug = slugify(parent_name)
-            # Create a placeholder parent note if it doesn't exist yet so we can attach immediately
-            parent_obj, p_created = Note.objects.get_or_create(
-                slug=parent_slug,
-                defaults={
-                    'title': parent_name,
-                    'content_raw': '',
-                    'note_type': Note.NoteType.FLEETING
-                }
-            )
-            defaults['parent_note'] = parent_obj
+        # The parent field is exclusively for categorizing Fleeting/Reference/Permanent
+        # So we do not link it to another Note record as parent_note.
             
         # Determine specific Note class based on type
-        if note_type_str.startswith('reference'):
+        if main_type == 'reference':
             defaults['note_type'] = Note.NoteType.REFERENCE
             
             # YAML frontmatter returns `None` for empty keys. 
@@ -149,16 +147,16 @@ class NoteIngestor:
             else:
                 defaults['author'] = str(author_val) if author_val is not None else ''
                 
-            # Try to infer reference_type from sub-type e.g. "reference-book" -> "book"
-            if "-" in note_type_str:
-                ref_type = note_type_str.split("-", 1)[1]
+            # Try to infer reference_type from sub-type e.g. "type: reference-book" -> "book"
+            if "-" in type_val:
+                ref_type = type_val.split("-", 1)[1]
                 defaults['reference_type'] = str(ref_type) if ref_type is not None else ''
             else:
                 ref_type = metadata.get('reference_type', '')
                 defaults['reference_type'] = str(ref_type) if ref_type is not None else ''
                 
             model_class = ReferenceNote
-        elif note_type_str.startswith('permanent'):
+        elif main_type == 'permanent':
             defaults['note_type'] = Note.NoteType.PERMANENT
             defaults['is_atomic'] = str(metadata.get('is_atomic', True)).lower() == 'true' if isinstance(metadata.get('is_atomic', True), str) else metadata.get('is_atomic', True)
             model_class = PermanentNote
@@ -207,16 +205,14 @@ class NoteIngestor:
             if link_key in seen_links: continue
             seen_links.add(link_key)
             target_slug = ld['target_slug']
-            # We must get or create the target note, or at least try to link it.
-            # If it's an unresolved link, we might create a minimal 'Fleeting' stub note
-            target_note, t_created = Note.objects.get_or_create(
-                slug=target_slug,
-                defaults={
-                    'title': ld['target_original'],
-                    'content_raw': '',  # Empty placeholder
-                    'note_type': Note.NoteType.FLEETING
-                }
-            )
+            
+            # Find the target note (if it exists)
+            target_note = Note.objects.filter(slug=target_slug).first()
+            
+            if not target_note:
+                # If the linked note doesn't exist, we skip it
+                # to prevent polluting the DB with empty stub notes.
+                continue
             
             # create the NoteLink
             NoteLink.objects.create(
