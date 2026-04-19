@@ -179,8 +179,8 @@ class APIIndexView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        doc_param = request.query_params.get('doc', 'project-guide')
-        valid_docs = ['project-guide', 'frontend-guide', 'obsidian-frontmatter-guide', 'roadmap']
+        doc_param = request.query_params.get('doc', 'about-guzars-api')
+        valid_docs = ['about-obsidian', 'about-setup', 'about-usage', 'latest-updates']
         
         if doc_param not in valid_docs:
             doc_param = 'project-guide'
@@ -221,10 +221,10 @@ class APIIndexView(APIView):
         <body>
             <nav>
                 <span>Quicklinks & Documentation</span>
-                <a href="?doc=project-guide">API Overview</a>
-                <a href="?doc=frontend-guide">Frontend Integration</a>
-                <a href="?doc=obsidian-frontmatter-guide">Frontmatter Guide</a>
-                <a href="?doc=roadmap">Roadmap</a>
+                <a href="?doc=about-guzars-api">API Overview</a>
+                <a href="?doc=about-setup">Setup Guide</a>
+                <a href="?doc=about-usage">Usage Guide</a>
+                <a href="?doc=latest-updates">Latest Updates</a>
             </nav>
             {html_content}
         </body>
