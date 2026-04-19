@@ -1,7 +1,9 @@
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Note, Tag, ReferenceNote, PermanentNote
-from .serializers import NoteSerializer, TagSerializer, ReferenceNoteSerializer, PermanentNoteSerializer
+from .serializers import NoteSerializer, TagSerializer, ReferenceNoteSerializer, PermanentNoteSerializer, NoteTreeSerializer
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -17,6 +19,16 @@ class NoteViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
     lookup_field = 'slug'
 
+    @action(detail=False, methods=['get'])
+    def tree(self, request):
+        """
+        Returns a lightweight payload of all notes including only metadata, parent paths, and titles.
+        Used primarily by the frontend to render the initial sidebar or file explorer.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = NoteTreeSerializer(queryset, many=True)
+        return Response(serializer.data)
+        
     def get_queryset(self):
         qs = super().get_queryset().filter(published=True)
         
@@ -30,6 +42,16 @@ class FleetingNoteViewSet(NoteViewSet):
     """
     Endpoints for Fleeting notes
     """
+    @action(detail=False, methods=['get'])
+    def tree(self, request):
+        """
+        Returns a lightweight payload of all notes including only metadata, parent paths, and titles.
+        Used primarily by the frontend to render the initial sidebar or file explorer.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = NoteTreeSerializer(queryset, many=True)
+        return Response(serializer.data)
+        
     def get_queryset(self):
         return super().get_queryset().filter(note_type=Note.NoteType.FLEETING)
 

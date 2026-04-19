@@ -56,7 +56,19 @@ GET /api/notes/?note_type=REF   # For Reference Notes
 GET /api/notes/?note_type=FLT   # For Fleeting Notes
 ```
 
-### 2. Full Note Payload (Graph + HTML + TOC)
+### 2. File System Generation (Lightweight Tree)
+When building a sidebar, file explorer, or navigation pane, fetching the entire note content is too heavy. You can request a "tree" representation which strips out the heavy HTML and Knowledge Graph arrays, returning only headers/metadata:
+
+```http
+GET /api/notes/tree/
+```
+**Key Data Returned (per object):**
+- `id` and `slug` (for routing)
+- `title` and `tags`
+- `parent_note_slug` (allows you to reconstruct nested directory structures)
+- `note_type` and `metadata` (allows you to show icons/emojis mapped from frontmatter)
+
+### 3. Full Note Payload (Graph + HTML + TOC)
 When you query a single note by its slug, the backend does the heavy lifting to provide everything you need to render the page and its surrounding context.
 
 ```http

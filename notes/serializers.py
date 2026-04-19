@@ -26,6 +26,15 @@ class NoteBacklinkSerializer(serializers.ModelSerializer):
         fields = ['id', 'source', 'source_slug', 'source_title', 'link_type', 'context_text']
 
 
+class NoteTreeSerializer(serializers.ModelSerializer):
+    tags = serializers.SlugRelatedField(many=True, read_only=True, slug_field='slug')
+    parent_note_slug = serializers.CharField(source='parent_note.slug', read_only=True)
+
+    class Meta:
+        model = Note
+        fields = ['id', 'title', 'slug', 'note_type', 'parent_note', 'parent_note_slug', 'created_at', 'updated_at', 'tags', 'metadata']
+
+
 class NoteSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     outgoing_links = NoteLinkSerializer(many=True, read_only=True)
