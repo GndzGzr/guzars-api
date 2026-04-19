@@ -7,4 +7,5 @@ urlpatterns = [
     path('webhook/github/', views.GitHubWebhookView.as_view(), name='github-webhook'),
     path('assets/', views.AssetProxyView.as_view(), name='asset-proxy'),
     path('config/', views.VaultConfigurationView.as_view(), name='vault-config'),
+    path('auth/signup/', views.SignUpView.as_view(), name='signup'),
 ]

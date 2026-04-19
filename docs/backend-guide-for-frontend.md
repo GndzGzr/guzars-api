@@ -12,17 +12,34 @@ The absolute best way to inspect the API, test requests, and view the exact JSON
 
 ---
 
-## 🔐 Authentication (Superuser Context)
+## 🔐 Authentication & Sign Up (Superuser Context)
 
-Your frontend acts on behalf of the backend superuser. This grants it unrestricted read access to unpublished drafts, configuration payloads, and backend-only metrics.
+Your frontend server logic acts on behalf of the backend **superuser**. Because you provide the master `OBSIDIAN_API_TOKEN` through your server variables, Next.js can pull configurations (`/api/vault-configuration/`) and bypass `published=False` logic globally for the admin view.
 
-Include your token in the HTTP Headers for every fetch request:
+Include your superuser token in the HTTP Headers for every server-side fetch:
 ```javascript
 const headers = {
   'Authorization': `Token ${process.env.OBSIDIAN_API_TOKEN}`,
   'Content-Type': 'application/json'
 };
 ```
+
+### Creating the Signup Logic (End Users)
+If you intend for other users to register and consume parts of the API independently (or have restricted content logic applied), the frontend can interface with the Signup Endpoint:
+
+```http
+POST /api/auth/signup/
+```
+**Request Body:**
+```json
+{
+  "username": "new_reader",
+  "password": "secure_password",
+  "email": "reader@example.com"
+}
+```
+**Response:**
+Returns a `201 Created` containing the newly minted user token which your frontend application can then store securely and map individual client privileges against.
 
 ---
 

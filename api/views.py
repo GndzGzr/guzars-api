@@ -231,3 +231,27 @@ class APIIndexView(APIView):
         </html>
         """
         return HttpResponse(html_page, content_type="text/html")
+
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
+from .serializers import UserSignupSerializer
+
+class SignUpView(APIView):
+    """
+    Endpoint for new user registration.
+    Returns the user's auth token upon successful creation.
+    """
+    permission_classes = [AllowAny]
+
+    @extend_schema(request=UserSignupSerializer)
+    def post(self, request):
+        serializer = UserSignupSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                "message": "User created successfully.",
+                "token": token.key,
+                "username": user.username
+            }, status=201)
+        return Response(serializer.errors, status=400)

@@ -20,13 +20,40 @@ module.exports = {
 }
 ```
 
-## 🔐 2. Environment Variables
+## 🔐 2. Authentication & Signup Flow
+
+The API follows a hybrid authentication model. 
+- **The Frontend Application (Next.js server)** accesses the CMS acting as the **Backend Superuser**, using a master token stored securely in `process.env`.
+- **The End-Users (Visitors)** can optionally sign up to your Next.js application to access private notes using user-level tokens dynamically requested from the backend.
+
+### A. Environment Variables
 Create a `.env.local` file in your Next.js root:
 ```env
 NEXT_PUBLIC_API_URL=https://guzars-api.vercel.app/api
-OBSIDIAN_API_TOKEN=your_token_here
+OBSIDIAN_API_TOKEN=your_master_superuser_token_here
 ```
 
+### B. User Signup Endpoint
+If your application allows users to register, you can hit the backend signup endpoint to create a Django user and returning their specific REST Token.
+
+```javascript
+// Example Next.js Client-Side Signup Function
+export async function registerUser(username, password, email) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password, email })
+  });
+  
+  if (!res.ok) throw new Error("Signup failed");
+  const data = await res.json();
+  
+  // Save user-level data.token in a cookie or localStorage for client-side fetches
+  return data.token; 
+}
+```
+
+### C. Data Fetching Utility
 ## 📡 3. Data Fetching Utility
 In Next.js App Router, you can fetch data directly in your Server Components. Create a `lib/api.js` utility:
 
