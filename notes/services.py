@@ -59,7 +59,9 @@ class NoteIngestor:
         
         note_instance.tags.set(leaf_tags)
 
-    def ingest_note(self, filename: str, raw_content: str, created_at=None, updated_at=None):
+    def ingest_note(self, filepath: str, raw_content: str, created_at=None, updated_at=None):
+        filename = filepath.split('/')[-1]
+        file_path_clean = filepath
         """
         Primary ingestion function for a single Markdown file context.
         """
@@ -79,6 +81,7 @@ class NoteIngestor:
         # Base note defaults
         defaults = {
             'title': title,
+            'file_path': file_path_clean,
             'content_raw': content,
             'content_html': render_markdown_to_html(content),
             'metadata': metadata,

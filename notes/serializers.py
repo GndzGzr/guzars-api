@@ -32,7 +32,7 @@ class NoteTreeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Note
-        fields = ['id', 'title', 'slug', 'note_type', 'parent_note', 'parent_note_slug', 'created_at', 'updated_at', 'tags', 'metadata']
+        fields = ['id', 'title', 'slug', 'note_type', 'parent_note', 'parent_note_slug', 'file_path', 'created_at', 'updated_at', 'tags', 'metadata']
 
 
 class NoteSerializer(serializers.ModelSerializer):
@@ -47,7 +47,7 @@ class NoteSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'slug', 'note_type', 'zettel_id', 'published',
             'content_html', 'metadata', 'toc', 'tags', 
-            'parent_note', 'parent_note_slug', 'parent_note_title',
+            'parent_note', 'parent_note_slug', 'file_path', 'parent_note_title',
             'outgoing_links', 'incoming_links',
             'created_at', 'updated_at'
         ]

@@ -101,7 +101,7 @@ class Command(BaseCommand):
                                 pass
 
                 try:
-                    note, created = ingestor.ingest_note(filename, raw_content, updated_at=timestamp)
+                    note, created = ingestor.ingest_note(filepath, raw_content, updated_at=timestamp)
                     if created and note:
                         note.created_at = timestamp
                         note.save(update_fields=['created_at'])
