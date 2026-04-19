@@ -14,6 +14,16 @@ class NoteIngestor:
     def __init__(self):
         pass
 
+    def _clean_metadata_for_json(self, meta):
+        import datetime
+        if isinstance(meta, dict):
+            return {k: self._clean_metadata_for_json(v) for k, v in meta.items()}
+        elif isinstance(meta, list):
+            return [self._clean_metadata_for_json(i) for i in meta]
+        elif isinstance(meta, (datetime.date, datetime.datetime)):
+            return meta.isoformat()
+        return meta
+
     def parse_markdown(self, raw_content: str):
         """
         Parses raw text (including frontmatter).
@@ -72,9 +82,10 @@ class NoteIngestor:
             metadata = {}
             content = raw_content
         
+        metadata = self._clean_metadata_for_json(metadata)
         # Derive title and slug
         # Filename acts as title if title is missing from metadata. Usually we strip '.md'
-        title = metadata.get('title', filename.replace('.md', ''))
+        title = metadata.get('title') or filename.replace('.md', '')
         slug = metadata.get('slug', slugify(title))
         note_type_str = str(metadata.get('type', 'fleeting')).lower()
         
@@ -86,7 +97,7 @@ class NoteIngestor:
             'content_html': render_markdown_to_html(content),
             'metadata': metadata,
             'toc': extract_toc_from_content(content),
-            'published': metadata.get('published', True)
+            'published': str(metadata.get('published', True)).lower() == 'true' if isinstance(metadata.get('published', True), str) else metadata.get('published', True)
         }
         
         if created_at:
@@ -149,11 +160,24 @@ class NoteIngestor:
             model_class = ReferenceNote
         elif note_type_str.startswith('permanent'):
             defaults['note_type'] = Note.NoteType.PERMANENT
-            defaults['is_atomic'] = metadata.get('is_atomic', True)
+            defaults['is_atomic'] = str(metadata.get('is_atomic', True)).lower() == 'true' if isinstance(metadata.get('is_atomic', True), str) else metadata.get('is_atomic', True)
             model_class = PermanentNote
         else:
             defaults['note_type'] = Note.NoteType.FLEETING
             model_class = Note
+
+
+        # Pre-promote base Note to Child explicitly if it exists to avoid update_fields error
+        existing = Note.objects.filter(slug=slug).first()
+        if existing:
+            if model_class == ReferenceNote and not hasattr(existing, 'referencenote'):
+                rn = ReferenceNote(note_ptr_id=existing.id)
+                rn.__dict__.update(existing.__dict__)
+                rn.save()
+            elif model_class == PermanentNote and not hasattr(existing, 'permanentnote'):
+                pn = PermanentNote(note_ptr_id=existing.id)
+                pn.__dict__.update(existing.__dict__)
+                pn.save()
 
         note_instance, created = model_class.objects.update_or_create(
             slug=slug,
@@ -177,7 +201,11 @@ class NoteIngestor:
         
         links_data = extract_links_from_content(content)
         
+        seen_links = set()
         for ld in links_data:
+            link_key = (ld['target_slug'], ld['target_block'])
+            if link_key in seen_links: continue
+            seen_links.add(link_key)
             target_slug = ld['target_slug']
             # We must get or create the target note, or at least try to link it.
             # If it's an unresolved link, we might create a minimal 'Fleeting' stub note
