@@ -64,7 +64,15 @@ class Command(BaseCommand):
         ]
         
         self.stdout.write(self.style.SUCCESS(f"Found {len(md_files)} markdown files. Beginning ingestion..."))
-
+        
+        # CLEANUP: Remove any existing notes that have .png, .pdf, .jpg, etc. extensions mistakenly added
+        from notes.models import Note
+        invalid_extensions = ('.png', '.pdf', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.bmp', '.mp4', '.mp3')
+        invalid_notes = [n.id for n in Note.objects.all() if str(n.title).lower().endswith(invalid_extensions) or str(n.slug).lower().endswith(invalid_extensions)]
+        if invalid_notes:
+            self.stdout.write(self.style.WARNING(f"Cleaning up {len(invalid_notes)} mistakenly indexed asset notes..."))
+            Note.objects.filter(id__in=invalid_notes).delete()
+            
         ingestor = NoteIngestor()
         success_count = 0
         error_count = 0

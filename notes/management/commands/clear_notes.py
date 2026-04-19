@@ -14,4 +14,4 @@ class Command(BaseCommand):
         self.stdout.write("Deleting all Tags...")
         Tag.objects.all().delete()
         
-        self.stdout.write(self.style.SUCCESS("Successfully cleared the knowledge graph database (Notes, Tags, Links)!"))
+        self.stdout.write(self.style.SUCCESS("Successfully cleared the knowledge graph database (Notes, Tags, Links, and any accidentally indexed Assets)!"))
