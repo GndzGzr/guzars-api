@@ -21,7 +21,6 @@ class Note(models.Model):
     toc = models.JSONField(default=list, blank=True)
     file_path = models.CharField(max_length=500, blank=True)
 
-
     zettel_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
     tags = models.ManyToManyField("Tag", related_name="notes", blank=True)
     

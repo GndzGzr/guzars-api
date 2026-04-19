@@ -220,7 +220,7 @@ class APIIndexView(APIView):
         </head>
         <body>
             <nav>
-                <span>Docs:</span>
+                <span>Quicklinks & Documentation</span>
                 <a href="?doc=project-guide">API Overview</a>
                 <a href="?doc=frontend-guide">Frontend Integration</a>
                 <a href="?doc=obsidian-frontmatter-guide">Frontmatter Guide</a>
