@@ -38,7 +38,7 @@ class Note(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['-title']  # Başlık sırasına göre azalan şekilde sıralama
 
     def save(self, *args, **kwargs):
         if not self.slug:
