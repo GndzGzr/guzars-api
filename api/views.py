@@ -183,7 +183,7 @@ class APIIndexView(APIView):
         valid_docs = ['about-obsidian', 'about-setup', 'about-usage', 'latest-updates']
         
         if doc_param not in valid_docs:
-            doc_param = 'project-guide'
+            doc_param = 'about-guzars-api'  # default doc
 
         file_path = os.path.join(settings.BASE_DIR, "docs", f"{doc_param}.md")
 
