@@ -2,7 +2,7 @@ import re
 import mistune
 from django.utils.text import slugify
 
-WIKILINK_PATTERN = r'\[\[([\s\S]+?)\]\]'
+WIKILINK_PATTERN = r'(?<!\!)\[\[([\s\S]+?)\]\]'
 EMBED_PATTERN = r'!\[\[([\s\S]+?)\]\]'
 
 
@@ -83,6 +83,7 @@ def render_html_obsidian_embed(renderer, target, alias):
         # It's embedding another Markdown Note block entirely
         # Render a placeholder or recursive blockquote (since we can't fetch the note contents directly here without breaking the stateless parser)
         target_note = target
+        
         target_hash = ""
         if '#' in target:
             target_note, target_hash = target.split('#', 1)
@@ -189,6 +190,12 @@ def extract_links_from_content(raw_markdown: str):
             target = inner
             
         target_note = target
+        
+        # Skip assets and documents that shouldn't be indexed as notes
+        _lower = target_note.lower()
+        if _lower.endswith(('.png', '.pdf', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.bmp', '.mp4', '.mp3')):
+            continue
+
         target_hash = ""
         if '#' in target:
             target_note, target_hash = target.split('#', 1)
