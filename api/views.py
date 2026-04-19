@@ -179,11 +179,15 @@ class APIIndexView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        doc_param = request.query_params.get('doc', 'about-guzars-api')
-        valid_docs = ['about-obsidian', 'about-setup', 'about-usage', 'latest-updates']
+        doc_param = request.query_params.get('doc', '01-introduction')
+        valid_docs = [
+            '01-introduction', '02-setup-and-deployment', '03-data-models',
+            '04-obsidian-integration', '05-api-reference', '06-usage-and-admin',
+            'changelog', 'Technologies'
+        ]
         
         if doc_param not in valid_docs:
-            doc_param = 'about-guzars-api'  # default doc
+            doc_param = '01-introduction'  # default doc
 
         file_path = os.path.join(settings.BASE_DIR, "docs", f"{doc_param}.md")
 
@@ -221,10 +225,14 @@ class APIIndexView(APIView):
         <body>
             <nav>
                 <span>Quicklinks & Documentation</span>
-                <a href="?doc=about-guzars-api">API Overview</a>
-                <a href="?doc=about-setup">Setup Guide</a>
-                <a href="?doc=about-usage">Usage Guide</a>
-                <a href="?doc=latest-updates">Latest Updates</a>
+                <a href="?doc=01-introduction">Introduction</a>
+                <a href="?doc=02-setup-and-deployment">Setup Guide</a>
+                <a href="?doc=03-data-models">Data Models</a>
+                <a href="?doc=04-obsidian-integration">Obsidian</a>
+                <a href="?doc=05-api-reference">API Ref</a>
+                <a href="?doc=06-usage-and-admin">Usage & Admin</a>
+                <a href="?doc=changelog">Changelog</a>
+                <a href="?doc=Technologies">Technologies</a>
             </nav>
             {html_content}
         </body>
